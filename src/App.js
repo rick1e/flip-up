@@ -11,6 +11,11 @@ function App() {
     let result = board.reduce((total, cell) => {
       return total + cell
     }, 0)
+    if (result === 0 || result === board.length) {
+      let resultText = result === 0 ? "LOST" : "WON"
+      document.getElementById("winnerBanner").innerHTML = "YOU " + resultText + "!!!"
+      return true;
+    }
 
     return result === 0 || result === board.length
   }
@@ -85,6 +90,8 @@ function App() {
 
   return (
     <div className="App">
+      <h1> Turn all the tiles BLUE </h1>
+      <h2 id="winnerBanner"></h2>
       <div id="board">
         {drawBoard()}
       </div>
