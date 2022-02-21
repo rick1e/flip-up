@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import { useEffect, useState } from 'react';
 
@@ -7,16 +6,21 @@ function App() {
     0, 0, 0,
     0, 0, 0]);
 
+  const endGame = () => {
+
+    let result = board.reduce((total, cell) => {
+      return total + cell
+    }, 0)
+    let resultText = result === 0 ? "LOST" : "WON"
+    document.getElementById("winnerBanner").innerHTML = "YOU " + resultText + "!!!"
+    const startButton = document.getElementById("startButton")
+    startButton.disabled = false;
+  }
+
   const checkComplete = () => {
     let result = board.reduce((total, cell) => {
       return total + cell
     }, 0)
-    if (result === 0 || result === board.length) {
-      let resultText = result === 0 ? "LOST" : "WON"
-      document.getElementById("winnerBanner").innerHTML = "YOU " + resultText + "!!!"
-      return true;
-    }
-
     return result === 0 || result === board.length
   }
 
@@ -27,7 +31,6 @@ function App() {
       newBoard[index] = (newBoard[index] + 1) % 2
       cell.className = newBoard[index] === 0 ? "cell" : "cell blue"
       setBoard(newBoard)
-      console.log(newBoard)
     }
 
   }
@@ -73,8 +76,7 @@ function App() {
       let index = Math.floor(Math.random() * board.length)
       if (checkComplete()) {
         clearInterval(AI)
-        const startButton = document.getElementById("startButton")
-        startButton.disabled = false;
+        endGame()
         return
       }
       flip(index)
@@ -92,7 +94,7 @@ function App() {
   return (
     <div className="App">
       <h1> Turn all the tiles BLUE </h1>
-      <h2 id="winnerBanner"></h2>
+      <span id="winnerBanner"></span>
       <div id="board">
         {drawBoard()}
       </div>
