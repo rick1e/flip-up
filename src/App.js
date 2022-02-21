@@ -55,6 +55,7 @@ function App() {
   const startGame = () => {
     let count = 0
     const startButton = document.getElementById("startButton")
+    document.getElementById("winnerBanner").innerHTML = ""
     startButton.disabled = true;
     let startInicies = getStartIndicies(board.length)
     let newBoard = board
