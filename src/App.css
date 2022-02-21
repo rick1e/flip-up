@@ -36,3 +36,25 @@
     transform: rotate(360deg);
   }
 }
+
+.cell{
+  width: 100px;
+  height: 100px;
+  margin: 0px;
+  border: 1px solid;
+  box-sizing: border-box;
+  background: red;
+  flex: 0 0 33.3%;
+}
+#board{
+  display: flex;
+  flex-wrap: wrap;
+  width: 300px;
+}
+.row{
+  display: flex;
+    flex-direction: row;
+}
+.cell.blue{
+  background: blue;
+}
