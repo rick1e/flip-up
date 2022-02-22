@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 function App() {
   const [board, setBoard] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-  const [timer, setTimer] = useState(0.01);
+  const [timer, setTimer] = useState(0.00);
   const [isGameRunning, setIsGameRunning] = useState(false);
 
   const endGame = () => {
@@ -62,7 +62,7 @@ function App() {
 
   const startGame = () => {
     let count = 0
-    setTimer(0.01)
+    setTimer(0.00)
     setIsGameRunning(true)
     const startButton = document.getElementById("startButton")
     document.getElementById("winnerBanner").innerHTML = ""
@@ -112,7 +112,7 @@ function App() {
     <div className="App">
       <h1> Flip Up Timed Attack </h1>
       <h1> Turn all the tiles BLUE </h1>
-      <span id="timeBanner">{timer}</span><br />
+      <span id="timeBanner">{timer.toFixed(2)}</span><br />
       <span id="winnerBanner"></span>
       <div id="board">
         {drawBoard()}
