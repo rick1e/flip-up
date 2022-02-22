@@ -2,7 +2,7 @@ import './App.css';
 import { useEffect, useState } from 'react';
 
 function App() {
-  const [board, setBoard] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const [board, setBoard] = useState([1, 1, 1, 1, 1, 1, 1, 1, 1]);
   const [timer, setTimer] = useState(0.00);
   const [isGameRunning, setIsGameRunning] = useState(false);
 
@@ -27,14 +27,16 @@ function App() {
 
   const flip = (index) => {
 
-    const cell = document.getElementById(index)
-    let newBoard = board;
-    newBoard[index] = (newBoard[index] + 1) % 2
-    cell.className = newBoard[index] === 0 ? "cell" : "cell blue"
-    setBoard(newBoard)
+    if (isGameRunning) {
+      const cell = document.getElementById(index)
+      let newBoard = board;
+      newBoard[index] = (newBoard[index] + 1) % 2
+      cell.className = newBoard[index] === 0 ? "cell" : "cell blue"
+      setBoard(newBoard)
 
-    if (checkComplete(newBoard)) {
-      endGame()
+      if (checkComplete(newBoard)) {
+        endGame()
+      }
     }
 
 
