@@ -2,9 +2,9 @@ import './App.css';
 import { useEffect, useState } from 'react';
 
 function App() {
-  const [board, setBoard] = useState([0, 0, 0,
-    0, 0, 0,
-    0, 0, 0]);
+  const [board, setBoard] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const [timer, setTimer] = useState(0.01);
+  const [isGameRunning, setIsGameRunning] = useState(false);
 
   const endGame = () => {
 
@@ -15,23 +15,28 @@ function App() {
     document.getElementById("winnerBanner").innerHTML = "YOU " + resultText + "!!!"
     const startButton = document.getElementById("startButton")
     startButton.disabled = false;
+    setIsGameRunning(false)
   }
 
-  const checkComplete = () => {
+  const checkComplete = (board) => {
     let result = board.reduce((total, cell) => {
       return total + cell
     }, 0)
-    return result === 0 || result === board.length
+    return result === board.length
   }
 
   const flip = (index) => {
-    if (!checkComplete()) {
-      const cell = document.getElementById(index)
-      let newBoard = board;
-      newBoard[index] = (newBoard[index] + 1) % 2
-      cell.className = newBoard[index] === 0 ? "cell" : "cell blue"
-      setBoard(newBoard)
+
+    const cell = document.getElementById(index)
+    let newBoard = board;
+    newBoard[index] = (newBoard[index] + 1) % 2
+    cell.className = newBoard[index] === 0 ? "cell" : "cell blue"
+    setBoard(newBoard)
+
+    if (checkComplete(newBoard)) {
+      endGame()
     }
+
 
   }
   const drawBoard = () => {
@@ -57,6 +62,8 @@ function App() {
 
   const startGame = () => {
     let count = 0
+    setTimer(0.01)
+    setIsGameRunning(true)
     const startButton = document.getElementById("startButton")
     document.getElementById("winnerBanner").innerHTML = ""
     startButton.disabled = true;
@@ -72,6 +79,7 @@ function App() {
       setBoard(newBoard)
     }
 
+    /*
     let AI = setInterval(() => {
       let index = Math.floor(Math.random() * board.length)
       if (checkComplete()) {
@@ -81,19 +89,29 @@ function App() {
       }
       flip(index)
       console.log(count++)
-    }, 500)
+    }, 250)
+    */
 
   }
 
 
   useEffect(() => {
-
-  }, [])
+    if (isGameRunning) {
+      const timeJump = 20
+      const timerTimeout = setTimeout(() => {
+        let time = Number.parseFloat((timer + (timeJump / 1000)).toFixed(2))
+        console.log(timer)
+        console.log(time)
+        setTimer(time);
+      }, timeJump);
+    }
+  })
 
 
   return (
     <div className="App">
       <h1> Turn all the tiles BLUE </h1>
+      <span id="timeBanner">{timer}</span><br />
       <span id="winnerBanner"></span>
       <div id="board">
         {drawBoard()}
