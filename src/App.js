@@ -50,7 +50,7 @@ function App() {
 
   const getStartIndicies = (size) => {
     let indexList = []
-    while (indexList.length < size / 2 - 1) {
+    while (indexList.length < size - 3) {
       let possibleIndex = Math.floor(Math.random() * size)
       if (!indexList.includes(possibleIndex)) {
         indexList.push(possibleIndex)
@@ -70,7 +70,7 @@ function App() {
     let startInicies = getStartIndicies(board.length)
     let newBoard = board
 
-    console.log(startInicies)
+    //console.log(startInicies)
 
     for (let index = 0; index < startInicies.length; index++) {
       const cell = document.getElementById(startInicies[index])
@@ -100,8 +100,8 @@ function App() {
       const timeJump = 20
       const timerTimeout = setTimeout(() => {
         let time = Number.parseFloat((timer + (timeJump / 1000)).toFixed(2))
-        console.log(timer)
-        console.log(time)
+        //console.log(timer)
+        //console.log(time)
         setTimer(time);
       }, timeJump);
     }
@@ -110,6 +110,7 @@ function App() {
 
   return (
     <div className="App">
+      <h1> Flip Up Timed Attack </h1>
       <h1> Turn all the tiles BLUE </h1>
       <span id="timeBanner">{timer}</span><br />
       <span id="winnerBanner"></span>
