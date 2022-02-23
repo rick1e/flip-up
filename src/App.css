@@ -36,7 +36,12 @@
     transform: rotate(360deg);
   }
 }
-
+.third{
+  flex: 0 0 33.3%;
+}
+.quarter{
+  flex: 0 0 25%;
+}
 .cell{
   width: 100px;
   height: 100px;
@@ -44,12 +49,18 @@
   border: 1px solid;
   box-sizing: border-box;
   background: red;
-  flex: 0 0 33.3%;
 }
 #board{
   display: flex;
   flex-wrap: wrap;
+  width: 400px;
+  margin: 0 auto;
+}
+#board.third{
   width: 300px;
+}
+#board.quarter{
+  width: 400px;
 }
 .row{
   display: flex;
