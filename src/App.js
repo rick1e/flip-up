@@ -2,7 +2,6 @@ import './App.css';
 import { useEffect, useState } from 'react';
 
 function App() {
-  const gridSize = 3
   const generateArray = (size, value) => {
     let array = []
     for (let i = 0; i < size * size; i++) {
@@ -10,19 +9,57 @@ function App() {
     }
     return array
   }
+  const randomizeBoard = (size, max) => {
+
+    let array = []
+    for (let i = 0; i < size * size; i++) {
+      let value = Math.floor(Math.random() * max)
+      array.push(value)
+    }
+    return array
+
+  }
+  const [gridSize, setGridSize] = useState(3)
   const [board, setBoard] = useState(generateArray(gridSize, 1));
+  const [targetBoard, setTargetBoard] = useState(randomizeBoard(gridSize, 3));
   const [timer, setTimer] = useState(0.00);
   const [isGameRunning, setIsGameRunning] = useState(false);
+  const [isCleared, setIsCleared] = useState(true);
   const [aiDifficulty, setAiDifficulty] = useState("OFF")
+  const [aiSpeed, setAiSpeed] = useState(500)
+  const [instructions, setInstructions] = useState("Tap a tile in your grid to start")
 
+
+  const onGridChange = (event) => {
+    setGridSize(Number.parseInt(event.target.value))
+  }
+
+  const onSpeedChange = (event) => {
+    setAiSpeed(Number.parseInt(event.target.value))
+  }
   const onRadioValueChange = (event) => {
     setAiDifficulty(event.target.value)
   }
 
   const getCellStyle = (value) => {
     let columns = gridSize === 4 ? "quarter" : "third"
-    return value === 0 ? "cell " + columns : "cell blue " + columns
+    let cellStyle = "cell " + columns
+    let colour = ""
+    switch (value) {
+      case 0:
+        colour = "red"
+        break;
+      case 1:
+        colour = "blue"
+        break;
+      case 2:
+        colour = "yellow"
+        break;
+    }
+    return "cell " + columns + " " + colour
   }
+
+
 
   const endGame = () => {
 
@@ -31,38 +68,60 @@ function App() {
     }, 0)
     let resultText = result === 0 ? "LOST" : "WON"
     document.getElementById("winnerBanner").innerHTML = "YOU " + resultText + "!!!"
-    const startButton = document.getElementById("startButton")
-    startButton.disabled = false;
     setIsGameRunning(false)
   }
 
   const checkComplete = (board) => {
-    let result = board.reduce((total, cell) => {
-      return total + cell
-    }, 0)
-    return result === board.length
+
+    let result = board.reduce((allSame, cell, index) => {
+      return allSame && cell === targetBoard[index]
+    }, true)
+    return result
   }
 
-  const flip = (index) => {
+  const flip = (index, user) => {
 
-    if (isGameRunning) {
-      const cell = document.getElementById(index)
-      let newBoard = board;
-      newBoard[index] = (newBoard[index] + 1) % 2
-      cell.className = getCellStyle(newBoard[index])
-      setBoard(newBoard)
-
-      if (checkComplete(newBoard)) {
-        endGame()
-      }
+    if (checkComplete(board)) {
+      startGame();
+      setInstructions("Tap a tile in your grid to start")
+      setIsCleared(true)
+      return;
+    }
+    if (!isGameRunning) {
+      setIsGameRunning(true)
+      setIsCleared(false)
     }
 
 
+    const cell = document.getElementById(index)
+    let newBoard = board;
+    newBoard[index] = user === 2 ? user : (newBoard[index] + 1) % 3
+    cell.className = getCellStyle(newBoard[index])
+    setBoard(newBoard)
+
+    if (checkComplete(newBoard)) {
+      endGame()
+      setInstructions("Tap a tile in your grid to reset")
+    }
+
+
+
+
+
   }
+  const drawTargetBoard = () => {
+    const boardDivs = targetBoard.map((cell, index) => {
+      let cellStyle = getCellStyle(cell)
+      return <div key={index} id={'target_' + index} className={cellStyle}></div>
+    })
+
+    return boardDivs;
+  }
+
   const drawBoard = () => {
     const boardDivs = board.map((cell, index) => {
       let cellStyle = getCellStyle(cell)
-      return <div key={index} id={index} className={cellStyle} onClick={() => { flip(index) }}></div>
+      return <div key={index} id={index} className={cellStyle} onClick={() => { flip(index, 1) }}></div>
     })
 
     return boardDivs;
@@ -82,50 +141,46 @@ function App() {
 
   const startGame = () => {
     setTimer(0.00)
-    setIsGameRunning(true)
-    const startButton = document.getElementById("startButton")
     document.getElementById("winnerBanner").innerHTML = ""
-    startButton.disabled = true;
     let startInicies = getStartIndicies(board.length)
-    let newBoard = board
+    let newBoard = generateArray(gridSize, 1)
+    setBoard(newBoard)
+  }
 
-    //console.log(startInicies)
-
-    for (let index = 0; index < startInicies.length; index++) {
-      const cell = document.getElementById(startInicies[index])
-      newBoard[startInicies[index]] = (newBoard[startInicies[index]] + 1) % 2
-      cell.className = getCellStyle(newBoard[startInicies[index]])
-      setBoard(newBoard)
+  const rollTraget = () => {
+    if (isCleared) {
+      setTargetBoard(randomizeBoard(gridSize, 3))
     }
-
-
-
-
   }
 
   useEffect(() => {
+    let AI
     if (isGameRunning) {
       if (aiDifficulty === "OFF") {
         return
       }
       if (aiDifficulty === "EASY") {
         let count = 0
-        let AI = setInterval(() => {
+        AI = setInterval(() => {
           let index = Math.floor(Math.random() * board.length)
+          console.log(board)
+          console.log(timer)
+
           if (checkComplete(board)) {
+            console.log("AI CLEAR intervals", AI, timer)
             clearInterval(AI)
             endGame()
             return
           }
-          flip(index)
-          console.log(count++)
-        }, 200)
+          flip(index, 0)
+          console.log("Game playing with intervals", AI, timer)
+        }, aiSpeed)
         return
       }
 
       if (aiDifficulty === "HARD") {
         let count = 0
-        let AI = setInterval(() => {
+        AI = setInterval(() => {
           let blueIndices = []
           board.filter((cell, index) => {
             if (cell === 1) {
@@ -139,15 +194,23 @@ function App() {
             return
           }
           if (blueIndices.length > 0) {
-            flip(blueIndices[blueIndex])
+            flip(blueIndices[blueIndex], 0)
           }
           console.log(blueIndices)
-        }, 200)
+        }, aiSpeed)
         return
       }
 
     }
+    else {
+      console.log("Game done and clearing intervals", AI)
+      clearInterval(AI)
+    }
   }, [isGameRunning])
+
+  useEffect(() => {
+    setBoard(generateArray(gridSize, 1))
+  }, [gridSize])
 
 
   useEffect(() => {
@@ -155,8 +218,6 @@ function App() {
       const timeJump = 20
       const timerTimeout = setTimeout(() => {
         let time = Number.parseFloat((timer + (timeJump / 1000)).toFixed(2))
-        //console.log(timer)
-        //console.log(time)
         setTimer(time);
       }, timeJump);
     }
@@ -165,55 +226,19 @@ function App() {
 
   return (
     <div className="App">
-      <h1> Flip Up Timed Attack </h1>
-      <h1> Turn all the tiles BLUE </h1>
+      <h1> Flip Up SO.v1. </h1>
+      <h1 > {instructions} </h1>
       <span id="timeBanner">{timer.toFixed(2)}</span><br />
-      <span id="winnerBanner"></span>
+      <span >Make your grid look like this</span><br />
+      {isCleared ? <span >Tap to change</span> : null}
+      <div id="targetBoard" className={gridSize === 4 ? "quarter" : "third"} onClick={rollTraget}>
+        {drawTargetBoard()}
+      </div>
+      <span >This is your grid</span>
       <div id="board" className={gridSize === 4 ? "quarter" : "third"}>
         {drawBoard()}
       </div>
-
-      <h2> AI Difficulty : {aiDifficulty}</h2>
-      <div className="radio">
-        <label>
-          <input
-            type="radio"
-            value="OFF"
-            checked={aiDifficulty === "OFF"}
-            onChange={onRadioValueChange}
-            disabled={isGameRunning}
-          />
-          OFF
-          </label>
-      </div>
-      <div className="radio">
-        <label>
-          <input
-            type="radio"
-            value="EASY"
-            checked={aiDifficulty === "EASY"}
-            onChange={onRadioValueChange}
-            disabled={isGameRunning}
-          />
-          EASY
-          </label>
-      </div>
-      <div className="radio">
-        <label>
-          <input
-            type="radio"
-            value="HARD"
-            checked={aiDifficulty === "HARD"}
-            onChange={onRadioValueChange}
-            disabled={isGameRunning}
-          />
-          HARD
-          </label>
-      </div>
-
-      <button id="startButton" onClick={startGame}>
-        Start
-      </button>
+      <span id="winnerBanner"></span>
 
 
     </div>
