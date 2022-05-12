@@ -22,6 +22,10 @@ function App() {
   const [gridSize, setGridSize] = useState(3)
   const [board, setBoard] = useState(generateArray(gridSize, 1));
   const [targetBoard, setTargetBoard] = useState(randomizeBoard(gridSize, 3));
+  const [flipPattern, setFlipPattern] = useState([
+    0, 1, 0,
+    1, 0, 1,
+    0, 1, 0,]);
   const [timer, setTimer] = useState(0.00);
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [isCleared, setIsCleared] = useState(true);
@@ -79,6 +83,75 @@ function App() {
     return result
   }
 
+  // x = 0  Shift Left
+  // x = 1  Shift Right
+
+  const shiftHorizontal = (oldgrid, y) => {
+    const horz = y * 2
+    const grid = [...oldgrid]
+
+    for (let j = 0; j < 3; j++) {
+      for (let i = 0; i < 3; i++) {
+        let cell = Math.abs(horz - i) + j * 3;
+        if (i == 2) {
+          grid[cell] = 0
+          break;
+        }
+        grid[cell] = grid[cell + 1 - horz]
+      }
+    }
+
+    return grid
+  }
+
+  // x = 0  Shift Up
+  // x = 1  Shift Down
+
+  const shiftVertical = (oldgrid, x) => {
+
+    const grid = [...oldgrid]
+    const vert = 2 * x;
+
+    for (let j = 0; j < 3; j++) {
+      for (let i = 0; i < 3; i++) {
+        let cell = (Math.abs(vert - i) * 3) + j;
+        if (i == 2) {
+          grid[cell] = 0
+          break;
+        }
+        grid[cell] = grid[cell + (1 - vert) * 3]
+      }
+    }
+    return grid
+  }
+
+  const getIndexListFromFlip = (index, pattern) => {
+
+    let test = [...pattern]
+
+    if (index % 3 == 0) {
+      test = [...shiftHorizontal(test, 0)]
+    }
+    if (index % 3 == 2) {
+      test = [...shiftHorizontal(test, 1)]
+    }
+    if (Math.floor(index / 3) == 0) {
+      test = [...shiftVertical(test, 0)]
+    }
+    if (Math.floor(index / 3) == 2) {
+      test = [...shiftVertical(test, 1)]
+    }
+
+    const indexDem = test.reduce((set, value, valIndex) => {
+      if (value == 1) {
+        return [...set, valIndex]
+      }
+      return set
+    }, [])
+
+    return indexDem;
+  }
+
   const flip = (index, user) => {
 
     if (checkComplete(board)) {
@@ -92,36 +165,32 @@ function App() {
       setIsCleared(false)
     }
 
+    const pattern = flipPattern;
 
-    const cell = document.getElementById(index)
-    let newBoard = board;
-    newBoard[index] = user === 2 ? user : (newBoard[index] + 1) % 3
-    cell.className = getCellStyle(newBoard[index])
+    let indices = getIndexListFromFlip(index, pattern)
+    let newBoard = [...board];
+
+
+    for (const i in indices) {
+      const flipIndex = indices[i]
+      const cell = document.getElementById(flipIndex)
+      newBoard[flipIndex] = user === 2 ? user : (newBoard[flipIndex] + 1) % 3
+      cell.className = getCellStyle(newBoard[flipIndex])
+    }
+
     setBoard(newBoard)
 
     if (checkComplete(newBoard)) {
       endGame()
       setInstructions("Tap a tile in your grid to reset")
     }
-
-
-
-
-
-  }
-  const drawTargetBoard = () => {
-    const boardDivs = targetBoard.map((cell, index) => {
-      let cellStyle = getCellStyle(cell)
-      return <div key={index} id={'target_' + index} className={cellStyle}></div>
-    })
-
-    return boardDivs;
   }
 
-  const drawBoard = () => {
-    const boardDivs = board.map((cell, index) => {
+
+  const drawBoard = (thisBoard, idPrefix) => {
+    const boardDivs = thisBoard.map((cell, index) => {
       let cellStyle = getCellStyle(cell)
-      return <div key={index} id={index} className={cellStyle} onClick={() => { flip(index, 1) }}></div>
+      return <div key={index} id={idPrefix + index} className={cellStyle} onClick={idPrefix == '' ? () => { flip(index, 1) } : null}></div>
     })
 
     return boardDivs;
@@ -153,6 +222,7 @@ function App() {
     }
   }
 
+  /*
   useEffect(() => {
     let AI
     if (isGameRunning) {
@@ -207,6 +277,7 @@ function App() {
       clearInterval(AI)
     }
   }, [isGameRunning])
+  */
 
   useEffect(() => {
     setBoard(generateArray(gridSize, 1))
@@ -231,12 +302,17 @@ function App() {
       <span id="timeBanner">{timer.toFixed(2)}</span><br />
       <span >Make your grid look like this</span><br />
       {isCleared ? <span >Tap to change</span> : null}
-      <div id="targetBoard" className={gridSize === 4 ? "quarter" : "third"} onClick={rollTraget}>
-        {drawTargetBoard()}
+      <div id="rules">
+        <div id="targetBoard" className={gridSize === 4 ? "quarter flip" : "third flip"} onClick={() => { }}>
+          {drawBoard(flipPattern, 'flip_')}
+        </div>
+        <div id="targetBoard" className={gridSize === 4 ? "quarter" : "third"} onClick={rollTraget}>
+          {drawBoard(targetBoard, 'target_')}
+        </div>
       </div>
       <span >This is your grid</span>
       <div id="board" className={gridSize === 4 ? "quarter" : "third"}>
-        {drawBoard()}
+        {drawBoard(board, '')}
       </div>
       <span id="winnerBanner"></span>
 

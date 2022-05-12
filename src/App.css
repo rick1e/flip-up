@@ -36,6 +36,9 @@
     transform: rotate(360deg);
   }
 }
+#rules{
+  display: flex;
+}
 .third{
   flex: 0 0 33.3%;
 }
@@ -80,4 +83,12 @@
 }
 .cell.yellow{
   background-color: #F3A712;
+}
+
+.flip .cell.blue{
+  background-color: #004385;
+}
+
+.flip .cell.red{
+  background-color: white;
 }
